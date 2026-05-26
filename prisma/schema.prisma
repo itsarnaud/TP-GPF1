@@ -1,0 +1,84 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum GrandstandCategory {
+  BRONZE
+  SILVER
+  GOLD
+  PLATINUM
+}
+
+enum SessionDay {
+  FRIDAY
+  SATURDAY
+  SUNDAY
+}
+
+enum SessionType {
+  PRACTICE
+  QUALIFYING
+  SPRINT
+  RACE
+}
+
+enum LoyaltyProgram {
+  NONE
+  SILVER
+  GOLD
+}
+
+enum ReservationStatus {
+  CONFIRMED
+  CANCELLED
+}
+
+model Grandstand {
+  id           Int                @id @default(autoincrement())
+  name         String
+  location     String
+  category     GrandstandCategory
+  capacity     Int
+  basePrice    Decimal            @db.Decimal(10, 2)
+  isCovered    Boolean
+  reservations Reservation[]
+}
+
+model Session {
+  id              Int           @id @default(autoincrement())
+  day             SessionDay
+  date            DateTime
+  type            SessionType
+  priceMultiplier Decimal       @db.Decimal(5, 2)
+  reservations    Reservation[] @relation("ReservationToSession")
+}
+
+model Spectator {
+  id               Int            @id @default(autoincrement())
+  name             String
+  email            String         @unique
+  birthDate        DateTime
+  loyaltyProgram   LoyaltyProgram
+  registrationDate DateTime       @default(now())
+  reservations     Reservation[]
+}
+
+model Reservation {
+  id               Int               @id @default(autoincrement())
+  spectator        Spectator         @relation(fields: [spectatorId], references: [id])
+  spectatorId      Int
+  grandstand       Grandstand        @relation(fields: [grandstandId], references: [id])
+  grandstandId     Int
+  sessions         Session[]         @relation("ReservationToSession")
+  seatCount        Int
+  totalPrice       Decimal           @db.Decimal(10, 2)
+  status           ReservationStatus
+  reservationDate  DateTime          @default(now())
+  cancellationDate DateTime?
+  refundAmount     Decimal?          @db.Decimal(10, 2)
+}

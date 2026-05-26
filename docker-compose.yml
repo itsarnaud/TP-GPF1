@@ -41,12 +41,27 @@ services:
     networks:
       - ${NETWORK_TYPE:-ipv4}
 
+  db-prisma:
+    image: postgres:17
+    container_name: postgresql_prisma
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: prisma_db
+    ports:
+      - '5433:5432'
+    volumes:
+      - prisma_data:/var/lib/postgresql/data
+    networks:
+      - ${NETWORK_TYPE:-ipv4}
+
 volumes:
   sonarqube_data:
   sonarqube_temp:
   sonarqube_extensions:
   sonarqube_logs:
   postgresql:
+  prisma_data:
 
 networks:
   ipv4:
