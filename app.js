@@ -1,8 +1,8 @@
-import createError  from 'http-errors';
+import createError from 'http-errors';
 import cookieParser from 'cookie-parser';
 import express from 'express';
-import path    from 'node:path';
-import logger  from 'morgan';
+import path from 'node:path';
+import logger from 'morgan';
 import { fileURLToPath } from 'node:url';
 
 import router from './routes/index.js';
@@ -24,7 +24,7 @@ app.use((req, res, next) => {
   next(createError(404));
 });
 
-app.use(function(err, req, res, next) {
+app.use(function (err, req, res, next) {
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
 
