@@ -8,7 +8,7 @@ const GrandstandSchema = z.object({
   category: CategoryEnum,
   capacity: z.number().int().min(1),
   basePrice: z.number(),
-  isCovered: z.boolean()
+  isCovered: z.boolean(),
 });
 
 export { GrandstandSchema };

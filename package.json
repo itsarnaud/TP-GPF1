@@ -9,9 +9,20 @@
     "prepare": "husky",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "test": "mocha",
-        "test:watch": "mocha --watch",
-        "test:db": "docker compose up db-test -d"
+    "test": "c8 mocha",
+    "test:watch": "mocha --watch",
+    "test:db": "docker compose up db-test -d"
+  },
+  "c8": {
+    "reporter": ["text", "lcov"],
+    "include": [
+      "app.js",
+      "controllers/**/*.js",
+      "routes/**/*.js",
+      "schemas/**/*.js",
+      "lib/**/*.js"
+    ],
+    "exclude": ["tests/**", "node_modules/**", "generated/**"]
   },
   "dependencies": {
     "@commitlint/cli": "^21.0.1",
@@ -31,6 +42,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "c8": "^11.0.0",
     "chai": "^6.2.2",
     "eslint": "^10.4.0",
     "eslint-config-prettier": "^10.1.8",

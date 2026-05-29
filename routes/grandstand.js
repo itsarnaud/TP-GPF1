@@ -5,5 +5,4 @@ import * as GrandstandController from '../controllers/GrandstandController.js';
 
 router.post('/', GrandstandController.create);
 
-
 export default router;

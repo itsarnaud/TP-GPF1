@@ -1,5 +1,5 @@
 import request from 'supertest';
-import app     from '../app.js';
+import app from '../app.js';
 import { expect } from 'chai';
 import { prisma } from '../lib/prisma.js';
 
