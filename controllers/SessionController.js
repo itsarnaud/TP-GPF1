@@ -3,7 +3,7 @@ import { prisma } from '../lib/prisma.js';
 
 const DEFAULT_MULTIPLIERS = {
   PRACTICE: 0.5,
-  QUALIFYING: 1.0,
+  QUALIFYING: 1,
   SPRINT: 1.2,
   RACE: 1.8,
 };
