@@ -1,4 +1,7 @@
-import { GrandstandSchema, GrandstandQuerySchema } from '../schemas/grandstand.schema.js';
+import {
+  GrandstandSchema,
+  GrandstandQuerySchema,
+} from '../schemas/grandstand.schema.js';
 import { prisma } from '../lib/prisma.js';
 
 export const create = async (req, res) => {
