@@ -11,4 +11,8 @@ const GrandstandSchema = z.object({
   isCovered: z.boolean(),
 });
 
-export { GrandstandSchema };
+const GrandstandQuerySchema = z.object({
+  category: CategoryEnum.optional(),
+});
+
+export { GrandstandSchema, GrandstandQuerySchema };

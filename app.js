@@ -12,7 +12,7 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 
-app.disable("x-powered-by");
+app.disable('x-powered-by');
 
 app.use(logger('dev'));
 app.use(express.json());

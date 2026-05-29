@@ -1,6 +1,6 @@
 import request from 'supertest';
-import app from '../app.js';
 import { expect } from 'chai';
+import app from '../app.js';
 import { prisma } from '../lib/prisma.js';
 
 const validBody = {
@@ -79,6 +79,61 @@ describe('POST /grandstand', () => {
 
       const count = await prisma.grandstand.count();
       expect(count).to.equal(0);
+    });
+  });
+});
+
+describe('GET /grandstand', () => {
+  before(async () => {
+    await prisma.grandstand.deleteMany();
+    await prisma.grandstand.createMany({
+      data: [
+        { name: 'Tribune A', location: 'Nord',  category: 'GOLD',   capacity: 100, basePrice: 50, isCovered: true  },
+        { name: 'Tribune B', location: 'Sud',   category: 'SILVER', capacity: 200, basePrice: 30, isCovered: false },
+        { name: 'Tribune C', location: 'Est',   category: 'GOLD',   capacity: 150, basePrice: 55, isCovered: true  },
+        { name: 'Tribune D', location: 'Ouest', category: 'BRONZE', capacity: 300, basePrice: 10, isCovered: false },
+      ],
+    });
+  });
+
+  after(async () => {
+    await prisma.grandstand.deleteMany();
+  });
+
+  describe('200 – liste complète', () => {
+    it('retourne toutes les tribunes sans filtre', async () => {
+      const res = await request(app).get('/grandstand');
+
+      expect(res.status).to.equal(200);
+      expect(res.body.success).to.be.true;
+      expect(res.body.grandstands).to.have.length(4);
+    });
+  });
+
+  describe('200 – filtre par catégorie', () => {
+    it('retourne uniquement les tribunes GOLD', async () => {
+      const res = await request(app).get('/grandstand?category=GOLD');
+
+      expect(res.status).to.equal(200);
+      expect(res.body.grandstands).to.have.length(2);
+      expect(res.body.grandstands.every((g) => g.category === 'GOLD')).to.be.true;
+    });
+
+    it('retourne une liste vide si aucune tribune ne correspond', async () => {
+      const res = await request(app).get('/grandstand?category=PLATINUM');
+
+      expect(res.status).to.equal(200);
+      expect(res.body.grandstands).to.have.length(0);
+    });
+  });
+
+  describe('400 – filtre invalide', () => {
+    it('retourne 400 si la catégorie est inconnue', async () => {
+      const res = await request(app).get('/grandstand?category=DIAMOND');
+
+      expect(res.status).to.equal(400);
+      expect(res.body.success).to.be.false;
+      expect(res.body.errors.fieldErrors).to.have.property('category');
     });
   });
 });
