@@ -14,7 +14,10 @@
     "test:db": "docker compose up db-test -d"
   },
   "c8": {
-    "reporter": ["text", "lcov"],
+    "reporter": [
+      "text",
+      "lcov"
+    ],
     "include": [
       "app.js",
       "controllers/**/*.js",
@@ -22,7 +25,11 @@
       "schemas/**/*.js",
       "lib/**/*.js"
     ],
-    "exclude": ["tests/**", "node_modules/**", "generated/**"]
+    "exclude": [
+      "tests/**",
+      "node_modules/**",
+      "generated/**"
+    ]
   },
   "dependencies": {
     "@commitlint/cli": "^21.0.1",
