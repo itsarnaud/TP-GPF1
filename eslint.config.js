@@ -17,6 +17,14 @@ export default [
     },
   },
   {
+    files: ['tests/**/*.js'],
+    languageOptions: {
+      globals: {
+        ...globals.mocha,
+      },
+    },
+  },
+  {
     ignores: ['node_modules/', 'public/', 'generated/'],
   },
 ];

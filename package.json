@@ -9,7 +9,9 @@
     "prepare": "husky",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "test": "echo \"No tests specified\" && exit 0"
+    "test": "mocha",
+        "test:watch": "mocha --watch",
+        "test:db": "docker compose up db-test -d"
   },
   "dependencies": {
     "@commitlint/cli": "^21.0.1",
@@ -24,15 +26,21 @@
     "jade": "~1.11.0",
     "morgan": "~1.9.1",
     "nodemon": "^3.1.14",
-    "pg": "^8.21.0"
+    "pg": "^8.21.0",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "chai": "^6.2.2",
     "eslint": "^10.4.0",
     "eslint-config-prettier": "^10.1.8",
+    "esmock": "^2.7.6",
     "globals": "^17.6.0",
     "husky": "^9.1.7",
+    "mocha": "^11.7.6",
     "prettier": "^3.8.3",
-    "prisma": "^7.8.0"
+    "prisma": "^7.8.0",
+    "sinon": "^22.0.0",
+    "supertest": "^7.2.2"
   }
 }

@@ -1,8 +1,12 @@
 import express from 'express';
 const router = express.Router();
 
-router.get('/', function (req, res) {
-  res.status(200).json({ success: true });
+import grandstand from './grandstand.js';
+
+router.use('/grandstand', grandstand);
+
+router.get('/healthz', (req, res) => {
+  res.status(200).json({ status: 'ok' });
 });
 
 export default router;
