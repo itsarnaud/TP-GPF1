@@ -24,11 +24,16 @@ export function applyWeekendPassDiscount(amount, sessions) {
 }
 
 export function applyLoyaltyDiscount(amount, loyaltyProgram) {
-  const rate = loyaltyProgram === 'GOLD' ? 0.1 : loyaltyProgram === 'SILVER' ? 0.05 : 0;
+  const rate =
+    loyaltyProgram === 'GOLD' ? 0.1 : loyaltyProgram === 'SILVER' ? 0.05 : 0;
   return { amount: amount * (1 - rate), rate };
 }
 
-export function applyYouthDiscount(amount, birthDate, referenceDate = new Date()) {
+export function applyYouthDiscount(
+  amount,
+  birthDate,
+  referenceDate = new Date()
+) {
   const applied = calculateAge(birthDate, referenceDate) < 16;
   return { amount: applied ? amount * 0.5 : amount, applied };
 }
@@ -44,13 +49,16 @@ export function computeQuote(grandstand, sessions, seatCount, spectator) {
 
   const afterLoyalty = applyLoyaltyDiscount(
     afterWeekend.amount,
-    spectator.loyaltyProgram,
+    spectator.loyaltyProgram
   );
   if (afterLoyalty.rate > 0)
     discountsApplied.push(`LOYALTY_${spectator.loyaltyProgram}`);
   const loyaltyDiscount = afterWeekend.amount - afterLoyalty.amount;
 
-  const afterYouth = applyYouthDiscount(afterLoyalty.amount, spectator.birthDate);
+  const afterYouth = applyYouthDiscount(
+    afterLoyalty.amount,
+    spectator.birthDate
+  );
   if (afterYouth.applied) discountsApplied.push('YOUTH');
   const youthDiscount = afterLoyalty.amount - afterYouth.amount;
 

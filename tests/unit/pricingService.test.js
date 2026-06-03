@@ -46,7 +46,11 @@ describe('computeSubTotal', () => {
 
 describe('applyWeekendPassDiscount', () => {
   it('applyWeekendPassDiscount_when3DaysSameGrandstand', () => {
-    const sessions = [{ day: 'FRIDAY' }, { day: 'SATURDAY' }, { day: 'SUNDAY' }];
+    const sessions = [
+      { day: 'FRIDAY' },
+      { day: 'SATURDAY' },
+      { day: 'SUNDAY' },
+    ];
     const { amount, applied } = applyWeekendPassDiscount(1000, sessions);
     expect(applied).to.be.true;
     expect(amount).to.be.closeTo(800, 0.01);
@@ -89,20 +93,32 @@ describe('applyLoyaltyDiscount', () => {
 describe('applyYouthDiscount', () => {
   it('applyYouthDiscount_appliedWhenUnder16', () => {
     const birthDate = new Date('2015-01-01');
-    const { amount, applied } = applyYouthDiscount(1000, birthDate, new Date('2026-06-03'));
+    const { amount, applied } = applyYouthDiscount(
+      1000,
+      birthDate,
+      new Date('2026-06-03')
+    );
     expect(applied).to.be.true;
     expect(amount).to.be.closeTo(500, 0.01);
   });
 
   it('applyYouthDiscount_notAppliedWhenExactly16', () => {
     const birthDate = new Date('2010-06-03');
-    const { applied } = applyYouthDiscount(1000, birthDate, new Date('2026-06-03'));
+    const { applied } = applyYouthDiscount(
+      1000,
+      birthDate,
+      new Date('2026-06-03')
+    );
     expect(applied).to.be.false;
   });
 
   it('applyYouthDiscount_notAppliedWhenOver16', () => {
     const birthDate = new Date('2000-01-01');
-    const { applied } = applyYouthDiscount(1000, birthDate, new Date('2026-06-03'));
+    const { applied } = applyYouthDiscount(
+      1000,
+      birthDate,
+      new Date('2026-06-03')
+    );
     expect(applied).to.be.false;
   });
 });
@@ -187,7 +203,11 @@ describe('computeSubTotal', () => {
 
 describe('applyWeekendPassDiscount', () => {
   it('applyWeekendPassDiscount_when3DaysSameGrandstand', () => {
-    const sessions = [{ day: 'FRIDAY' }, { day: 'SATURDAY' }, { day: 'SUNDAY' }];
+    const sessions = [
+      { day: 'FRIDAY' },
+      { day: 'SATURDAY' },
+      { day: 'SUNDAY' },
+    ];
     const { amount, applied } = applyWeekendPassDiscount(1000, sessions);
     expect(applied).toBe(true);
     expect(amount).toBeCloseTo(800);
@@ -230,20 +250,32 @@ describe('applyLoyaltyDiscount', () => {
 describe('applyYouthDiscount', () => {
   it('applyYouthDiscount_appliedWhenUnder16', () => {
     const birthDate = new Date('2015-01-01');
-    const { amount, applied } = applyYouthDiscount(1000, birthDate, new Date('2026-06-03'));
+    const { amount, applied } = applyYouthDiscount(
+      1000,
+      birthDate,
+      new Date('2026-06-03')
+    );
     expect(applied).toBe(true);
     expect(amount).toBeCloseTo(500);
   });
 
   it('applyYouthDiscount_notAppliedWhenExactly16', () => {
     const birthDate = new Date('2010-06-03');
-    const { applied } = applyYouthDiscount(1000, birthDate, new Date('2026-06-03'));
+    const { applied } = applyYouthDiscount(
+      1000,
+      birthDate,
+      new Date('2026-06-03')
+    );
     expect(applied).toBe(false);
   });
 
   it('applyYouthDiscount_notAppliedWhenOver16', () => {
     const birthDate = new Date('2000-01-01');
-    const { applied } = applyYouthDiscount(1000, birthDate, new Date('2026-06-03'));
+    const { applied } = applyYouthDiscount(
+      1000,
+      birthDate,
+      new Date('2026-06-03')
+    );
     expect(applied).toBe(false);
   });
 });

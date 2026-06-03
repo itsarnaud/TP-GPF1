@@ -14,9 +14,27 @@ const grandstand = {
 };
 
 const sessions = [
-  { id: 1, day: 'FRIDAY', date: new Date('2026-07-04'), type: 'RACE', priceMultiplier: '1.00' },
-  { id: 2, day: 'SATURDAY', date: new Date('2026-07-05'), type: 'RACE', priceMultiplier: '1.00' },
-  { id: 3, day: 'SUNDAY', date: new Date('2026-07-06'), type: 'RACE', priceMultiplier: '1.00' },
+  {
+    id: 1,
+    day: 'FRIDAY',
+    date: new Date('2026-07-04'),
+    type: 'RACE',
+    priceMultiplier: '1.00',
+  },
+  {
+    id: 2,
+    day: 'SATURDAY',
+    date: new Date('2026-07-05'),
+    type: 'RACE',
+    priceMultiplier: '1.00',
+  },
+  {
+    id: 3,
+    day: 'SUNDAY',
+    date: new Date('2026-07-06'),
+    type: 'RACE',
+    priceMultiplier: '1.00',
+  },
 ];
 
 const spectatorAdult = {
@@ -136,7 +154,9 @@ describe('POST /reservations', () => {
   });
 
   it('happy path : crée une réservation dont le prix correspond au devis', async () => {
-    const quoteRes = await request(app).post('/reservations/quote').send(VALID_BODY);
+    const quoteRes = await request(app)
+      .post('/reservations/quote')
+      .send(VALID_BODY);
     expect(quoteRes.status).to.equal(200);
     const expectedTotal = quoteRes.body.total;
 
@@ -145,6 +165,9 @@ describe('POST /reservations', () => {
     expect(res.body).to.have.property('reservation');
     expect(res.body).to.have.property('quote');
     expect(res.body.quote.total).to.be.closeTo(expectedTotal, 0.01);
-    expect(Number(res.body.reservation.totalPrice)).to.be.closeTo(expectedTotal, 0.01);
+    expect(Number(res.body.reservation.totalPrice)).to.be.closeTo(
+      expectedTotal,
+      0.01
+    );
   });
 });

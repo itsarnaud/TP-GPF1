@@ -4,8 +4,17 @@ export async function quote(req, res, next) {
   try {
     const { grandstandId, sessionIds, seatCount, spectatorId } = req.body;
 
-    if (!grandstandId || !Array.isArray(sessionIds) || sessionIds.length === 0 || !seatCount || !spectatorId) {
-      return res.status(400).json({ error: 'Les champs grandstandId, sessionIds, seatCount et spectatorId sont obligatoires' });
+    if (
+      !grandstandId ||
+      !Array.isArray(sessionIds) ||
+      sessionIds.length === 0 ||
+      !seatCount ||
+      !spectatorId
+    ) {
+      return res.status(400).json({
+        error:
+          'Les champs grandstandId, sessionIds, seatCount et spectatorId sont obligatoires',
+      });
     }
 
     const result = await getQuote({
@@ -25,8 +34,17 @@ export async function create(req, res, next) {
   try {
     const { grandstandId, sessionIds, seatCount, spectatorId } = req.body;
 
-    if (!grandstandId || !Array.isArray(sessionIds) || sessionIds.length === 0 || !seatCount || !spectatorId) {
-      return res.status(400).json({ error: 'Les champs grandstandId, sessionIds, seatCount et spectatorId sont obligatoires' });
+    if (
+      !grandstandId ||
+      !Array.isArray(sessionIds) ||
+      sessionIds.length === 0 ||
+      !seatCount ||
+      !spectatorId
+    ) {
+      return res.status(400).json({
+        error:
+          'Les champs grandstandId, sessionIds, seatCount et spectatorId sont obligatoires',
+      });
     }
 
     const { reservation, quote: priceQuote } = await createReservation({

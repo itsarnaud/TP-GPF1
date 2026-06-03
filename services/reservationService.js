@@ -20,7 +20,12 @@ export async function getRemainingSeats(grandstandId, sessionId) {
   return grandstand.capacity - bookedSeats;
 }
 
-export async function getQuote({ grandstandId, sessionIds, seatCount, spectatorId }) {
+export async function getQuote({
+  grandstandId,
+  sessionIds,
+  seatCount,
+  spectatorId,
+}) {
   const [grandstand, sessions, spectator] = await Promise.all([
     prisma.grandstand.findUnique({ where: { id: grandstandId } }),
     prisma.session.findMany({ where: { id: { in: sessionIds } } }),
@@ -46,7 +51,12 @@ export async function getQuote({ grandstandId, sessionIds, seatCount, spectatorI
   return computeQuote(grandstand, sessions, seatCount, spectator);
 }
 
-export async function createReservation({ grandstandId, sessionIds, seatCount, spectatorId }) {
+export async function createReservation({
+  grandstandId,
+  sessionIds,
+  seatCount,
+  spectatorId,
+}) {
   const [grandstand, sessions, spectator] = await Promise.all([
     prisma.grandstand.findUnique({ where: { id: grandstandId } }),
     prisma.session.findMany({ where: { id: { in: sessionIds } } }),
@@ -79,7 +89,7 @@ export async function createReservation({ grandstandId, sessionIds, seatCount, s
     const remaining = await getRemainingSeats(grandstandId, session.id);
     if (remaining < seatCount) {
       const err = new Error(
-        `Places insuffisantes pour la session ${session.id} (${remaining} place(s) restante(s))`,
+        `Places insuffisantes pour la session ${session.id} (${remaining} place(s) restante(s))`
       );
       err.status = 409;
       throw err;
