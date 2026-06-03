@@ -1,67 +1,59 @@
-import { describe, it, expect, vi } from 'vitest';
+import { expect } from 'chai';
+import sinon from 'sinon';
+import esmock from 'esmock';
 import request from 'supertest';
 
-vi.mock('../../lib/prismaClient.js', () => {
-  const grandstand = {
-    id: 1,
-    name: 'Tribune Nord',
-    location: 'North',
-    category: 'GOLD',
-    capacity: 100,
-    basePrice: '100.00',
-    isCovered: true,
-  };
+const grandstand = {
+  id: 1,
+  name: 'Tribune Nord',
+  location: 'North',
+  category: 'GOLD',
+  capacity: 100,
+  basePrice: '100.00',
+  isCovered: true,
+};
 
-  const sessions = [
-    { id: 1, day: 'FRIDAY', date: new Date('2026-07-04'), type: 'RACE', priceMultiplier: '1.00' },
-    { id: 2, day: 'SATURDAY', date: new Date('2026-07-05'), type: 'RACE', priceMultiplier: '1.00' },
-    { id: 3, day: 'SUNDAY', date: new Date('2026-07-06'), type: 'RACE', priceMultiplier: '1.00' },
-  ];
+const sessions = [
+  { id: 1, day: 'FRIDAY', date: new Date('2026-07-04'), type: 'RACE', priceMultiplier: '1.00' },
+  { id: 2, day: 'SATURDAY', date: new Date('2026-07-05'), type: 'RACE', priceMultiplier: '1.00' },
+  { id: 3, day: 'SUNDAY', date: new Date('2026-07-06'), type: 'RACE', priceMultiplier: '1.00' },
+];
 
-  const spectatorAdult = {
-    id: 1,
-    name: 'John Doe',
-    email: 'john@example.com',
-    birthDate: new Date('1990-01-01'),
-    loyaltyProgram: 'NONE',
-  };
+const spectatorAdult = {
+  id: 1,
+  name: 'John Doe',
+  email: 'john@example.com',
+  birthDate: new Date('1990-01-01'),
+  loyaltyProgram: 'NONE',
+};
 
-  const createdReservation = {
-    id: 42,
-    spectatorId: 1,
-    grandstandId: 1,
-    seatCount: 2,
-    totalPrice: '480.00',
-    status: 'CONFIRMED',
-    reservationDate: new Date(),
-    cancellationDate: null,
-    refundAmount: null,
-    grandstand,
-    spectator: spectatorAdult,
-    sessions,
-  };
+const createdReservation = {
+  id: 42,
+  spectatorId: 1,
+  grandstandId: 1,
+  seatCount: 2,
+  totalPrice: '480.00',
+  status: 'CONFIRMED',
+  reservationDate: new Date(),
+  cancellationDate: null,
+  refundAmount: null,
+  grandstand,
+  spectator: spectatorAdult,
+  sessions,
+};
 
-  const prismaMock = {
-    grandstand: {
-      findUnique: vi.fn().mockResolvedValue(grandstand),
-      findUniqueOrThrow: vi.fn().mockResolvedValue(grandstand),
-    },
-    session: {
-      findMany: vi.fn().mockResolvedValue(sessions),
-    },
-    spectator: {
-      findUnique: vi.fn().mockResolvedValue(spectatorAdult),
-    },
-    reservation: {
-      aggregate: vi.fn().mockResolvedValue({ _sum: { seatCount: 0 } }),
-      create: vi.fn().mockResolvedValue(createdReservation),
-    },
-  };
-
-  return { default: prismaMock };
-});
-
-import app from '../../app.js';
+const prismaMock = {
+  grandstand: {
+    findUnique: sinon.stub(),
+    findUniqueOrThrow: sinon.stub(),
+  },
+  session: { findMany: sinon.stub() },
+  spectator: { findUnique: sinon.stub() },
+  reservation: {
+    aggregate: sinon.stub(),
+    create: sinon.stub(),
+  },
+};
 
 const VALID_BODY = {
   grandstandId: 1,
@@ -70,78 +62,89 @@ const VALID_BODY = {
   spectatorId: 1,
 };
 
+let app;
+
+before(async () => {
+  app = (
+    await esmock('../../app.js', import.meta, {
+      '../../lib/prisma.js': { prisma: prismaMock },
+    })
+  ).default;
+});
+
+beforeEach(() => {
+  prismaMock.grandstand.findUnique.resolves(grandstand);
+  prismaMock.grandstand.findUniqueOrThrow.resolves(grandstand);
+  prismaMock.session.findMany.resolves(sessions);
+  prismaMock.spectator.findUnique.resolves(spectatorAdult);
+  prismaMock.reservation.aggregate.resolves({ _sum: { seatCount: 0 } });
+  prismaMock.reservation.create.resolves(createdReservation);
+});
+
+afterEach(() => sinon.reset());
+
 describe('POST /reservations/quote', () => {
-  it('returns 400 when required fields are missing', async () => {
+  it('retourne 400 si les champs obligatoires sont absents', async () => {
     const res = await request(app).post('/reservations/quote').send({});
-    expect(res.status).toBe(400);
+    expect(res.status).to.equal(400);
   });
 
-  it('returns 200 with a valid quote on happy path', async () => {
+  it('retourne 200 avec un devis valide', async () => {
     const res = await request(app).post('/reservations/quote').send(VALID_BODY);
-    expect(res.status).toBe(200);
-    expect(res.body).toHaveProperty('total');
-    expect(res.body).toHaveProperty('subTotal');
-    expect(res.body).toHaveProperty('discountsApplied');
+    expect(res.status).to.equal(200);
+    expect(res.body).to.have.property('total');
+    expect(res.body).to.have.property('subTotal');
+    expect(res.body).to.have.property('discountsApplied');
   });
 });
 
 describe('POST /reservations', () => {
-  it('returns 400 when required fields are missing', async () => {
+  it('retourne 400 si les champs obligatoires sont absents', async () => {
     const res = await request(app).post('/reservations').send({});
-    expect(res.status).toBe(400);
+    expect(res.status).to.equal(400);
   });
 
-  it('returns 400 when seatCount exceeds 6 (rule 6)', async () => {
+  it('retourne 400 si seatCount dépasse 6 (règle 6)', async () => {
     const res = await request(app)
       .post('/reservations')
       .send({ ...VALID_BODY, seatCount: 7 });
-    expect(res.status).toBe(400);
+    expect(res.status).to.equal(400);
   });
 
-  it('returns 404 when grandstand does not exist', async () => {
-    const { default: prisma } = await import('../../lib/prismaClient.js');
-    prisma.grandstand.findUnique.mockResolvedValueOnce(null);
-
+  it('retourne 404 si la tribune est introuvable', async () => {
+    prismaMock.grandstand.findUnique.resolves(null);
     const res = await request(app).post('/reservations').send(VALID_BODY);
-    expect(res.status).toBe(404);
+    expect(res.status).to.equal(404);
   });
 
-  it('returns 404 when one or more sessions do not exist', async () => {
-    const { default: prisma } = await import('../../lib/prismaClient.js');
-    prisma.session.findMany.mockResolvedValueOnce([
-      { id: 1, day: 'FRIDAY', priceMultiplier: '1.00' },
-    ]);
-
+  it('retourne 404 si une session est introuvable', async () => {
+    prismaMock.session.findMany.resolves([sessions[0]]);
     const res = await request(app).post('/reservations').send(VALID_BODY);
-    expect(res.status).toBe(404);
+    expect(res.status).to.equal(404);
   });
 
-  it('returns 404 when spectator does not exist', async () => {
-    const { default: prisma } = await import('../../lib/prismaClient.js');
-    prisma.spectator.findUnique.mockResolvedValueOnce(null);
-
+  it('retourne 404 si le spectateur est introuvable', async () => {
+    prismaMock.spectator.findUnique.resolves(null);
     const res = await request(app).post('/reservations').send(VALID_BODY);
-    expect(res.status).toBe(404);
+    expect(res.status).to.equal(404);
   });
 
-  it('returns 409 when not enough seats available (rule 7)', async () => {
-    const { default: prisma } = await import('../../lib/prismaClient.js');
-    prisma.reservation.aggregate.mockResolvedValueOnce({ _sum: { seatCount: 99 } });
-
+  it('retourne 409 si les places sont insuffisantes (règle 7)', async () => {
+    prismaMock.reservation.aggregate.resolves({ _sum: { seatCount: 99 } });
     const res = await request(app).post('/reservations').send(VALID_BODY);
-    expect(res.status).toBe(409);
+    expect(res.status).to.equal(409);
   });
 
-  it('happy path: creates reservation with totalPrice matching the quote', async () => {
+  it('happy path : crée une réservation dont le prix correspond au devis', async () => {
     const quoteRes = await request(app).post('/reservations/quote').send(VALID_BODY);
-    expect(quoteRes.status).toBe(200);
+    expect(quoteRes.status).to.equal(200);
     const expectedTotal = quoteRes.body.total;
 
     const res = await request(app).post('/reservations').send(VALID_BODY);
-    expect(res.status).toBe(201);
-    expect(res.body).toHaveProperty('reservation');
-    expect(res.body).toHaveProperty('quote');
-    expect(res.body.quote.total).toBeCloseTo(expectedTotal, 2);
-    expect(Number(res.body.reservation.totalPrice)).toBeCloseTo(expectedTotal, 2);
+    expect(res.status).to.equal(201);
+    expect(res.body).to.have.property('reservation');
+    expect(res.body).to.have.property('quote');
+    expect(res.body.quote.total).to.be.closeTo(expectedTotal, 0.01);
+    expect(Number(res.body.reservation.totalPrice)).to.be.closeTo(expectedTotal, 0.01);
   });
 });

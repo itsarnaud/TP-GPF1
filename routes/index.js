@@ -3,8 +3,16 @@ import { quote, create } from '../controllers/reservationController.js';
 
 const router = express.Router();
 
-router.get('/', function (req, res) {
-  res.status(200).json({ success: true });
+import grandstand from './grandstand.js';
+import session from './session.js';
+import spectator from './spectator.js';
+
+router.use('/grandstands', grandstand);
+router.use('/sessions', session);
+router.use('/spectators', spectator);
+
+router.get('/healthz', (req, res) => {
+  res.status(200).json({ status: 'ok' });
 });
 
 router.post('/reservations/quote', quote);

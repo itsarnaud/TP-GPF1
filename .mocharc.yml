@@ -1,0 +1,5 @@
+spec: 'tests/**/*.test.js'
+file: 'tests/setup.js'
+timeout: 10000
+node-option:
+  - env-file=.env.test

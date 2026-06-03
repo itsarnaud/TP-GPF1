@@ -1,4 +1,4 @@
-import prisma from '../lib/prismaClient.js';
+import { prisma } from '../lib/prisma.js';
 import { computeQuote } from './pricingService.js';
 
 export async function getRemainingSeats(grandstandId, sessionId) {

@@ -41,6 +41,18 @@ services:
     networks:
       - ${NETWORK_TYPE:-ipv4}
 
+  db-test:
+    image: postgres:17
+    container_name: postgresql_test
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: prisma_test
+    ports:
+      - '5435:5432'
+    networks:
+      - ${NETWORK_TYPE:-ipv4}
+
   db-prisma:
     image: postgres:17
     container_name: postgresql_prisma
@@ -49,7 +61,7 @@ services:
       POSTGRES_PASSWORD: password
       POSTGRES_DB: prisma_db
     ports:
-      - '5433:5432'
+      - '5434:5432'
     volumes:
       - prisma_data:/var/lib/postgresql/data
     networks:
