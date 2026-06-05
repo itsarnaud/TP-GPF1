@@ -1,4 +1,8 @@
-import { getQuote, createReservation } from '../services/reservationService.js';
+import {
+  getQuote,
+  createReservation,
+  cancelReservation,
+} from '../services/reservationService.js';
 
 export async function quote(req, res, next) {
   try {
@@ -55,6 +59,24 @@ export async function create(req, res, next) {
     });
 
     return res.status(201).json({ reservation, quote: priceQuote });
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function cancel(req, res, next) {
+  try {
+    const { id } = req.params;
+
+    if (!id) {
+      return res.status(400).json({
+        error: "L'identifiant de la réservation est obligatoire",
+      });
+    }
+
+    const { reservation, refund } = await cancelReservation(Number(id));
+
+    return res.status(200).json({ reservation, refund });
   } catch (err) {
     next(err);
   }

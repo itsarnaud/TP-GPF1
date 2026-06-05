@@ -70,6 +70,8 @@ const prismaMock = {
   reservation: {
     aggregate: sinon.stub(),
     create: sinon.stub(),
+    findUnique: sinon.stub(),
+    update: sinon.stub(),
   },
 };
 
@@ -174,5 +176,84 @@ describe('POST /reservations', () => {
       expectedTotal,
       0.01
     );
+  });
+});
+
+describe('POST /reservations/:id/cancel', () => {
+  it("retourne 404 si la réservation n'existe pas", async () => {
+    prismaMock.reservation.findUnique.resolves(null);
+    const res = await request(app).post('/reservations/999/cancel');
+    expect(res.status).to.equal(404);
+  });
+
+  it('retourne 400 si la réservation est déjà annulée (refus double annulation)', async () => {
+    prismaMock.reservation.findUnique.resolves({
+      ...createdReservation,
+      status: 'CANCELLED',
+    });
+    const res = await request(app).post('/reservations/42/cancel');
+    expect(res.status).to.equal(400);
+  });
+
+  it('rembourse 100% à J-15', async () => {
+    const futureDate = new Date();
+    futureDate.setDate(futureDate.getDate() + 15);
+
+    prismaMock.reservation.findUnique.resolves({
+      ...createdReservation,
+      sessions: [{ ...sessions[0], date: futureDate }],
+    });
+
+    prismaMock.reservation.update.resolves({
+      ...createdReservation,
+      status: 'CANCELLED',
+      refundAmount: '480.00',
+    });
+
+    const res = await request(app).post('/reservations/42/cancel');
+    expect(res.status).to.equal(200);
+    expect(res.body.refund.rate).to.equal(1);
+    expect(res.body.refund.amount).to.equal(480);
+    expect(res.body.reservation.status).to.equal('CANCELLED');
+  });
+
+  it('rembourse 0% à J-3', async () => {
+    const nearDate = new Date();
+    nearDate.setDate(nearDate.getDate() + 3);
+
+    prismaMock.reservation.findUnique.resolves({
+      ...createdReservation,
+      sessions: [{ ...sessions[0], date: nearDate }],
+    });
+
+    prismaMock.reservation.update.resolves({
+      ...createdReservation,
+      status: 'CANCELLED',
+      refundAmount: '0.00',
+    });
+
+    const res = await request(app).post('/reservations/42/cancel');
+    expect(res.status).to.equal(200);
+    expect(res.body.refund.rate).to.equal(0);
+    expect(res.body.refund.amount).to.equal(0);
+    expect(res.body.reservation.status).to.equal('CANCELLED');
+  });
+
+  it('permet de rejouer une réservation après annulation (libération effective)', async () => {
+    prismaMock.reservation.findUnique.resolves({
+      ...createdReservation,
+      sessions: [sessions[0]],
+    });
+    prismaMock.reservation.update.resolves({
+      ...createdReservation,
+      status: 'CANCELLED',
+      refundAmount: '480.00',
+    });
+    await request(app).post('/reservations/42/cancel');
+
+    prismaMock.reservation.aggregate.resolves({ _sum: { seatCount: 0 } });
+
+    const res = await request(app).post('/reservations').send(VALID_BODY);
+    expect(res.status).to.equal(201);
   });
 });

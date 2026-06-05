@@ -1,5 +1,5 @@
 import express from 'express';
-import { quote, create } from '../controllers/reservationController.js';
+import { quote, create, cancel } from '../controllers/reservationController.js';
 
 const router = express.Router();
 
@@ -17,5 +17,6 @@ router.get('/healthz', (req, res) => {
 
 router.post('/reservations/quote', quote);
 router.post('/reservations', create);
+router.post('/reservations/:id/cancel', cancel);
 
 export default router;
