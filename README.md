@@ -1,189 +1,129 @@
-# tp-gpf1
+# tp-gpf1 - API Réservation Grand Prix F1
 
-API REST Express + Prisma pour la gestion de tribunes, sessions et spectateurs.
+API REST (Express + Prisma) pour la gestion de tribunes, de sessions et de spectateurs.
 
-## Prérequis
+## Guide de démarrage
 
-- [Node.js](https://nodejs.org/) v20+
-- [Docker](https://www.docker.com/) (OrbStack ou Docker Desktop)
-- `sonar-scanner` installé globalement pour l'analyse SonarQube (optionnel)
+### Prérequis
 
----
+- Node.js v20+
+- Docker (OrbStack ou Docker Desktop)
+- sonar-scanner (optionnel, pour l'analyse SonarQube)
 
-## Installation
+### Installation
 
 ```bash
 npm install
 ```
 
-> Husky s'installe automatiquement via le script `prepare`.
+Husky sera installé et configuré automatiquement via le script de préparation.
 
----
+### Configuration
 
-## Variables d'environnement
-
-Créer un fichier `.env` à la racine :
+Créez un fichier `.env` à la racine du projet avec les informations de connexion à la base de données de développement :
 
 ```env
 DATABASE_URL="postgresql://user:password@localhost:5434/prisma_db"
 ```
 
-Un fichier `.env.test` est déjà présent pour la base de test (port 5435) — ne pas le committer.
+Le fichier `.env.test` est déjà configuré pour pointer vers la base de données de test (port 5435).
 
----
+### Base de données
 
-## Base de données
-
-### Démarrer les conteneurs
+Démarrez les conteneurs PostgreSQL (développement et test) via Docker Compose :
 
 ```bash
-# Base de développement (port 5434)
-docker compose up db-prisma -d
-
-# Base de test (port 5435)
-docker compose up db-test -d
-
-# Les deux en même temps
 docker compose up db-prisma db-test -d
 ```
 
-### Appliquer les migrations
+Appliquez les migrations sur la base de développement :
 
 ```bash
-# Développement
 npx prisma migrate deploy
+```
 
-# Régénérer le client Prisma après modification du schema
+Si vous modifiez le schéma Prisma (`prisma/schema.prisma`), mettez à jour le client :
+
+```bash
 npx prisma generate
 ```
 
----
+### Lancement
 
-## Lancer le projet
+Pour lancer le serveur en mode développement (avec rechargement automatique) :
 
 ```bash
-# Développement (rechargement automatique)
 npm run dev
-
-# Production
-npm start
 ```
 
-L'API écoute sur `http://localhost:3000` par défaut.
-
-### Vérifier que l'API répond
+L'API écoute par défaut sur le port 3000. Vous pouvez vérifier son état via :
 
 ```bash
 curl http://localhost:3000/healthz
 ```
 
----
-
-## Tests
-
-La base de test doit être démarrée avant de lancer les tests.
+Pour lancer le serveur en production :
 
 ```bash
-# Démarrer la base de test (à faire une seule fois)
-npm run test:db
+npm start
+```
 
-# Lancer les tests (migrations + couverture automatiques)
+### Tests
+
+Assurez-vous que le conteneur `db-test` est démarré. Les scripts de test s'occuperont d'appliquer les migrations sur la base de test et de générer le rapport de couverture.
+
+```bash
+# Lancer la suite de tests complète
 npm test
 
-# Mode watch pendant le développement
+# Lancer les tests en mode interactif
 npm run test:watch
 ```
 
-Le rapport de couverture est généré dans `coverage/lcov.info` après chaque `npm test`.
+Le rapport de couverture est généré dans `coverage/lcov.info`.
 
----
-
-## Qualité du code
-
-### Lint & formatage
+### Outils de qualité
 
 ```bash
-# Vérifier le code
+# Lancer le linter
 npm run lint
 
-# Formater le code
+# Formater le code avec Prettier
 npm run format
 ```
 
-### Hooks Git (Husky)
-
-Chaque commit déclenche automatiquement :
-
-| Hook         | Action                                       |
-| ------------ | -------------------------------------------- |
-| `pre-commit` | `format` → `lint` → `test`                   |
-| `commit-msg` | Validation du message (Conventional Commits) |
-
-### Format des messages de commit
-
-Le projet suit la convention [Conventional Commits](https://www.conventionalcommits.org/) :
-
-```
-<type>(<scope>): <description>
-
-feat(grandstand): add list endpoint with category filter
-fix(session): correct default multiplier for SPRINT
-test(spectator): add email uniqueness test
-docs: update README
-```
-
-Types autorisés : `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`.
-
----
-
-## SonarQube
-
-### Démarrer SonarQube
-
-```bash
-docker compose up sonarqube -d
-```
-
-L'interface est disponible sur `http://localhost:9000` (admin / admin au premier lancement).
-
-### Lancer une analyse
-
-Toujours générer la couverture avant d'analyser :
-
-```bash
-npm test && sonar \
-  -Dsonar.host.url=http://localhost:9000 \
-  -Dsonar.token=<votre_token> \
-  -Dsonar.projectKey=tp-gpf1
-```
-
-> Le rapport de couverture (`coverage/lcov.info`) est automatiquement lu par SonarQube grâce à `sonar-project.properties`.
+Des hooks Git sont configurés via Husky. Avant chaque commit, le code est formaté, linté et testé. Le message de commit est également validé pour respecter la convention *Conventional Commits*.
 
 ---
 
 ## Structure du projet
 
 ```
-├── controllers/        # Logique métier des routes
-├── routes/             # Définition des endpoints Express
-├── schemas/            # Schémas de validation Zod
-├── lib/                # Client Prisma partagé
+├── controllers/        # Logique métier liée aux requêtes HTTP
+├── routes/             # Définition des endpoints
+├── schemas/            # Schémas de validation (Zod)
+├── lib/                # Code partagé (ex: client Prisma)
 ├── prisma/
-│   ├── schema.prisma   # Modèles de données
-│   └── migrations/     # Historique des migrations SQL
-├── tests/              # Tests Mocha + Supertest
-├── .env                # Variables d'environnement (non commité)
-├── .env.test           # Variables pour les tests (non commité)
+│   ├── schema.prisma   # Modélisation de la base de données
+│   └── migrations/     # Fichiers de migration SQL
+├── services/           # Cœur de la logique métier (fonctions pures)
+├── tests/              # Tests unitaires et d'intégration
+├── RAPPORT.md          # Rapport d'évaluation final
+├── .env                # Variables d'environnement de développement
+├── .env.test           # Variables d'environnement de test
 └── sonar-project.properties
 ```
 
-## Endpoints disponibles
+## Endpoints
 
-| Méthode | Route          | Description                               |
-| ------- | -------------- | ----------------------------------------- |
-| `GET`   | `/healthz`     | Santé de l'API                            |
-| `POST`  | `/grandstands` | Créer une tribune                         |
-| `GET`   | `/grandstands` | Lister les tribunes (filtre `?category=`) |
-| `POST`  | `/sessions`    | Créer une session                         |
-| `POST`  | `/spectators`  | Inscrire un spectateur                    |
-| `GET`   | `/spectators`  | Lister les spectateurs                    |
+| Méthode | Endpoint                     | Description                                |
+| ------- | ---------------------------- | ------------------------------------------ |
+| `GET`   | `/healthz`                   | Vérification de l'état de l'API            |
+| `POST`  | `/grandstands`               | Créer une tribune                          |
+| `GET`   | `/grandstands`               | Lister les tribunes (filtre `?category=`)  |
+| `POST`  | `/sessions`                  | Créer une session                          |
+| `POST`  | `/spectators`                | Inscrire un nouveau spectateur             |
+| `GET`   | `/spectators`                | Lister tous les spectateurs                |
+| `POST`  | `/reservations/quote`        | Simuler le tarif d'une réservation         |
+| `POST`  | `/reservations`              | Créer et confirmer une réservation         |
+| `POST`  | `/reservations/:id/cancel`   | Annuler une réservation existante          |
