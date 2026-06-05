@@ -20,10 +20,9 @@ export async function getRemainingSeats(grandstandId, sessionId) {
   return grandstand.capacity - bookedSeats;
 }
 
-export async function getQuote({
+async function getReservationContext({
   grandstandId,
   sessionIds,
-  seatCount,
   spectatorId,
 }) {
   const [grandstand, sessions, spectator] = await Promise.all([
@@ -48,6 +47,20 @@ export async function getQuote({
     throw err;
   }
 
+  return { grandstand, sessions, spectator };
+}
+
+export async function getQuote({
+  grandstandId,
+  sessionIds,
+  seatCount,
+  spectatorId,
+}) {
+  const { grandstand, sessions, spectator } = await getReservationContext({
+    grandstandId,
+    sessionIds,
+    spectatorId,
+  });
   return computeQuote(grandstand, sessions, seatCount, spectator);
 }
 
@@ -57,27 +70,11 @@ export async function createReservation({
   seatCount,
   spectatorId,
 }) {
-  const [grandstand, sessions, spectator] = await Promise.all([
-    prisma.grandstand.findUnique({ where: { id: grandstandId } }),
-    prisma.session.findMany({ where: { id: { in: sessionIds } } }),
-    prisma.spectator.findUnique({ where: { id: spectatorId } }),
-  ]);
-
-  if (!grandstand) {
-    const err = new Error('Tribune introuvable');
-    err.status = 404;
-    throw err;
-  }
-  if (sessions.length !== sessionIds.length) {
-    const err = new Error('Une ou plusieurs sessions sont introuvables');
-    err.status = 404;
-    throw err;
-  }
-  if (!spectator) {
-    const err = new Error('Spectateur introuvable');
-    err.status = 404;
-    throw err;
-  }
+  const { grandstand, sessions, spectator } = await getReservationContext({
+    grandstandId,
+    sessionIds,
+    spectatorId,
+  });
 
   if (seatCount < 1 || seatCount > 6) {
     const err = new Error('Le nombre de places doit être compris entre 1 et 6');

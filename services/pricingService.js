@@ -24,8 +24,12 @@ export function applyWeekendPassDiscount(amount, sessions) {
 }
 
 export function applyLoyaltyDiscount(amount, loyaltyProgram) {
-  const rate =
-    loyaltyProgram === 'GOLD' ? 0.1 : loyaltyProgram === 'SILVER' ? 0.05 : 0;
+  let rate = 0;
+  if (loyaltyProgram === 'GOLD') {
+    rate = 0.1;
+  } else if (loyaltyProgram === 'SILVER') {
+    rate = 0.05;
+  }
   return { amount: amount * (1 - rate), rate };
 }
 

@@ -84,9 +84,14 @@ let app;
 
 before(async () => {
   app = (
-    await esmock('../../app.js', import.meta.url, {}, {
-      '../../lib/prisma.js': { prisma: prismaMock },
-    })
+    await esmock(
+      '../../app.js',
+      import.meta.url,
+      {},
+      {
+        '../../lib/prisma.js': { prisma: prismaMock },
+      }
+    )
   ).default;
 });
 
